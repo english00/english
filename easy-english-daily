@@ -1,0 +1,190 @@
+<index. html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Easy English Daily</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Easy English Daily</h1>
+    <p>Học tiếng Anh mỗi ngày qua cụm từ thực tế</p>
+    <blockquote>“Learn a phrase, change your world.”</blockquote>
+    <nav>
+      <button onclick="loadTopic('daily')">🏠 Đời sống</button>
+      <button onclick="loadTopic('social')">💬 Giao tiếp</button>
+      <button onclick="loadTopic('work')">💼 Công việc</button>
+      <button onclick="loadTopic('emotions')">😊 Cảm xúc</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="flashcards">
+      <h2 id="topic-title">Chọn chủ đề để bắt đầu</h2>
+      <div class="card">
+        <p id="phrase">...</p>
+        <p id="meaning">...</p>
+        <button onclick="playAudio()">🔊 Nghe</button>
+        <button onclick="nextCard()">➡ Tiếp</button>
+      </div>
+    </section>
+
+    <section id="quiz">
+      <h2>📝 Quiz nhanh</h2>
+      <p id="quiz-question">...</p>
+      <div id="quiz-options"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Easy English Daily</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f0f8ff;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+header {
+  background: #3498db;
+  color: white;
+  padding: 15px;
+}
+
+nav button {
+  margin: 5px;
+  padding: 8px 12px;
+  border: none;
+  background: #2980b9;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin: 20px auto;
+  width: 300px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #ccc;
+}
+
+button {
+  margin: 5px;
+  padding: 10px 15px;
+  border: none;
+  background: #3498db;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2980b9;
+}
+
+#quiz-options button {
+  display: block;
+  margin: 5px auto;
+  width: 200px;
+}
+const topics = {
+  daily: [
+    { phrase: "wake up", meaning: "thức dậy" },
+    { phrase: "brush teeth", meaning: "đánh răng" },
+    { phrase: "make breakfast", meaning: "làm bữa sáng" },
+    { phrase: "go to bed", meaning: "đi ngủ" }
+  ],
+  social: [
+    { phrase: "hang out", meaning: "đi chơi" },
+    { phrase: "catch up", meaning: "hỏi thăm, cập nhật tình hình" },
+    { phrase: "give a hand", meaning: "giúp đỡ" },
+    { phrase: "make a joke", meaning: "nói đùa" }
+  ],
+  work: [
+    { phrase: "meet a deadline", meaning: "hoàn thành đúng hạn" },
+    { phrase: "take notes", meaning: "ghi chú" },
+    { phrase: "give a presentation", meaning: "thuyết trình" },
+    { phrase: "follow up", meaning: "theo dõi, tiếp tục xử lý" }
+  ],
+  emotions: [
+    { phrase: "cheer up", meaning: "vui lên" },
+    { phrase: "calm down", meaning: "bình tĩnh" },
+    { phrase: "freak out", meaning: "hoảng sợ" },
+    { phrase: "be excited", meaning: "hào hứng" }
+  ]
+};
+
+let currentTopic = [];
+let currentIndex = 0;
+
+function loadTopic(name) {
+  currentTopic = topics[name];
+  currentIndex = 0;
+  document.getElementById("topic-title").textContent = "Chủ đề: " + name;
+  showCard();
+  generateQuiz();
+  localStorage.setItem("lastTopic", name);
+}
+
+function showCard() {
+  const card = currentTopic[currentIndex];
+  document.getElementById("phrase").textContent = card.phrase;
+  document.getElementById("meaning").textContent = card.meaning;
+}
+
+function nextCard() {
+  currentIndex = (currentIndex + 1) % currentTopic.length;
+  showCard();
+}
+
+function playAudio() {
+  const text = currentTopic[currentIndex].phrase;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  speechSynthesis.speak(utterance);
+}
+
+function generateQuiz() {
+  const qIndex = Math.floor(Math.random() * currentTopic.length);
+  const question = currentTopic[qIndex];
+  document.getElementById("quiz-question").textContent = `"${question.phrase}" nghĩa là gì?`;
+
+  let options = [question.meaning];
+  while (options.length < 4) {
+    let randomMeaning = currentTopic[Math.floor(Math.random() * currentTopic.length)].meaning;
+    if (!options.includes(randomMeaning)) options.push(randomMeaning);
+  }
+  options.sort(() => Math.random() - 0.5);
+
+  const container = document.getElementById("quiz-options");
+  container.innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+    btn.onclick = () => {
+      if (opt === question.meaning) {
+        alert("✅ Chính xác!");
+      } else {
+        alert("❌ Sai rồi!");
+      }
+      generateQuiz();
+    };
+    container.appendChild(btn);
+  });
+}
+
+// Tự động tải lại chủ đề cuối cùng khi mở web
+window.onload = () => {
+  const last = localStorage.getItem("lastTopic");
+  if (last && topics[last]) {
+    loadTopic(last);
+  }
+};
